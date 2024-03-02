@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="container">
+    <h2 class="mt-3">{{request.user.first_name}} {{request.user.last_name}}</h2>
+    <p><strong>Blood group: </strong>{{profile.bloodGroup}}</p>
+    <p><strong>Last donated: </strong>{{profile.lastDonationDate}}</p>
+    <p><strong>Address: </strong>{{profile.address}}</p>
+    <p><strong>Age: </strong>{{profile.age}}</p>
+    <p><strong>Availability: </strong>
+        {% if profile.available %}
+        <span class="text-success">Available</span>
+        {% else %}
+        <span class="text-danger">Not available</span>
+        {% endif %}
+    </p>
+    <a href="{% url 'updateProfile' %}">
+        <div class="btn btn-primary">Update profile</div>
+    </a>
+
+    <h2 class="my-5">Created requests</h2>
+
+    {% if records|length == 0 %}
+    <h5 class="text-center my-5"> No Items </h5>
+    {% endif %}
+
+    <div class="row gap-5 flex-wrap">
+        {% for item in records %}
+
+        <div class="card col-3">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">{{item.date}}</h6>
+                <h5 class="card-title mb-2">{{item.bloodGroup}}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{item.contactNumber}}</h6>
+                <p class="card-text">{{item.description}}</p>
+                {% if item.acceptedBy != None %}
+                <span class="badge bg-success">Donated</span>
+                {% elif item.cancelled %}
+                <span class="badge bg-danger">Cancelled</span>
+                {% else %}
+                <span class="badge bg-warning">Pending</span>
+                {% endif %}
+
+            </div>
+        </div>
+
+        {% endfor %}
+    </div>
+</div>
+
+
+{% endblock content %}
