@@ -5,30 +5,11 @@
 
 <div class="container">
 
-    <br>
-    <br>
-    <div class="my-5"></div>
-    <p class="fs-1 text-center mt-5">🩸 Take my blood</p>
-    <p class="fs-3 text-center my-3">Where life flows</p>
-    <div class="my-5"></div>
-    <div class="my-5"></div>
-    <div class="my-5"></div>
-    <div class="my-5"></div>
-    <br>
-    <br>
-    <br>
-    <br>
-    <hr>
-    
-    <div class="d-flex justify-content-between align-items-center">
-        <h2 class="my-3 d-inline-block">Available donors</h2>
-
-        <a class="btn btn-primary" href="{% url 'allDonors' %}">View all</a>
-    </div>
+    <h2 class="my-3 d-inline-block">Available donors</h2>
     <div class="row flex-wrap gap-3">
 
         {% if donors|length == 0 %}
-        <h5 class="text-center my-5"> No one is available at the moment </h5>
+        <h5 class="text-center my-5"> No Items </h5>
         {% endif %}
 
         {% for item in donors %}
@@ -46,6 +27,7 @@
 
         {% endfor %}
     </div>
+
 </div>
 
 

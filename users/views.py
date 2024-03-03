@@ -79,7 +79,7 @@ def logoutView(req: HttpRequest):
 @login_required
 def profileView(req):
     profile = Profile.objects.filter(user=req.user.id).get()
-    createdOnes = DonationRequest.objects.filter(createdBy=req.user).all()
+    createdOnes = DonationRequest.objects.filter(createdBy=req.user).order_by('-updatedAt').all()
 
     ctx = {
         'profile': profile,

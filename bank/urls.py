@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.urls import path
 
-from bank.views import acceptRequestView, allPrivateRequestsView, allRequestsView, createRequestView, dashboardView, declineRequestView, passView
+from bank.views import acceptRequestView, allDonorsView, allPrivateRequestsView, allRequestsView, createRequestView, dashboardView, declineRequestView, passView
 
 urlpatterns = [
     path('createRequest', createRequestView, name='createRequest'),
@@ -25,4 +25,5 @@ urlpatterns = [
     path('dashboard', dashboardView, name='dashboard'),
     path('allRequests', allRequestsView, name='allRequests'),
     path('allPrivateRequests', allPrivateRequestsView, name='allPrivateRequests'),
+    path('allDonors', allDonorsView, name='allDonors'),
 ]

@@ -81,7 +81,7 @@ def dashboardView(req: HttpRequest):
     preqs = DonationRequest.objects.filter(
         ~Q(createdBy=req.user), targetDonor=req.user, acceptedBy=None, cancelled=False).all()[:6]
     history = DonationRequest.objects.filter(Q(cancelled=True) | Q(
-        acceptedBy=req.user)).order_by('updatedAt').all()
+        acceptedBy=req.user)).order_by('-updatedAt').all()
     ctx = {
         'reqs': reqs,
         'preqs': preqs,
@@ -122,8 +122,9 @@ def acceptRequestView(req, id):
     messages.success(req, 'You accepted the donation request')
     return redirect('dashboard')
 
+
 @login_required
-def declineRequestView(req,id):
+def declineRequestView(req, id):
     profile = Profile.objects.filter(user=req.user).get()
     if profile.bloodGroup == None:
         messages.error(
@@ -142,13 +143,13 @@ def declineRequestView(req,id):
     r = requests[0]
 
     if r.targetDonor != profile.user:
-        messages.error(req,'The request is not for you to decline')
+        messages.error(req, 'The request is not for you to decline')
         return redirect('dashboard')
-    
-    r.cancelled=True
+
+    r.cancelled = True
     r.updatedAt = datetime.datetime.now()
     r.save()
-    messages.success(req,'The request was declined')
+    messages.success(req, 'The request was declined')
     return redirect('dashboard')
 
 
@@ -176,3 +177,16 @@ def allPrivateRequestsView(req: HttpRequest):
         'pageTitle': 'Exclusive donation requests'
     }
     return render(req, 'all_reqs.html', ctx)
+
+
+
+def allDonorsView(req: HttpRequest):
+    q = Profile.objects.filter(available=True)
+    if req.user.is_authenticated:
+        q = q.filter(~Q(user=req.user))
+    donors = q.order_by(
+        'lastDonationDate').all()[:12]
+    ctx = {
+        'donors': donors
+    }
+    return render(req, 'all_donors.html', ctx)
