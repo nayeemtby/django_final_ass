@@ -16,10 +16,13 @@ Including another URLconf
 """
 from django.urls import path
 
-from bank.views import acceptRequestView, createRequestView, dashboardView, passView
+from bank.views import acceptRequestView, allPrivateRequestsView, allRequestsView, createRequestView, dashboardView, declineRequestView, passView
 
 urlpatterns = [
     path('createRequest', createRequestView, name='createRequest'),
     path('acceptRequest/<int:id>', acceptRequestView, name='acceptRequest'),
+    path('declineRequest/<int:id>', declineRequestView, name='declineRequest'),
     path('dashboard', dashboardView, name='dashboard'),
+    path('allRequests', allRequestsView, name='allRequests'),
+    path('allPrivateRequests', allPrivateRequestsView, name='allPrivateRequests'),
 ]

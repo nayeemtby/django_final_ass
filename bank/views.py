@@ -27,7 +27,7 @@ def createRequestView(req: HttpRequest):
     targetUserId = req.GET.get('to', None)
     targetUserProfile = None
     if targetUserId != None:
-        all = Profile.objects.filter(user=targetUserId).get()
+        all = Profile.objects.filter(user=targetUserId).all()
         if len(all) > 0 and all[0].available == True:
             targetUserProfile = all[0]
 
@@ -53,6 +53,9 @@ def createRequestView(req: HttpRequest):
     else:
         form = PublicRequestForm(req.POST)
     if form.is_valid():
+        if targetUserProfile != None:
+            form.cleaned_data['bloodGroup'] = targetUserProfile.bloodGroup
+            form.cleaned_data['targetDonor'] = targetUserProfile.user
         # form.cleaned_data['createdBy'] = req.user.id
         DonationRequest.objects.create(
             # createdAt=form.cleaned_data['createdAt'],
@@ -72,6 +75,7 @@ def createRequestView(req: HttpRequest):
 
 @login_required
 def dashboardView(req: HttpRequest):
+    profile = Profile.objects.filter(user=req.user).get()
     reqs = DonationRequest.objects.filter(
         ~Q(createdBy=req.user), targetDonor=None, acceptedBy=None).all()[:6]
     preqs = DonationRequest.objects.filter(
@@ -81,21 +85,94 @@ def dashboardView(req: HttpRequest):
     ctx = {
         'reqs': reqs,
         'preqs': preqs,
-        'history': history
+        'history': history,
+        'profile': profile,
     }
     return render(req, 'dashboard.html', ctx)
 
 
 @login_required
 def acceptRequestView(req, id):
+    profile = Profile.objects.filter(user=req.user).get()
+    if profile.bloodGroup == None:
+        messages.error(
+            req, 'You must set your blood group to be able to accept')
+        return redirect('profile')
+    if profile.age < 13:
+        messages.error(
+            req, 'You must be at least 13 years old to be able to accept')
+        return redirect('profile')
+
     requests = DonationRequest.objects.filter(id=id).all()
     if len(requests) == 0:
         messages.error(req, 'The donation request was not found')
         return redirect('dashboard')
 
     r = requests[0]
+
+    if r.bloodGroup != profile.bloodGroup:
+        messages.error(req, 'Your blood group is not the same as requested')
+        return redirect('dashboard')
+
     r.acceptedBy = req.user
     r.updatedAt = datetime.datetime.now()
     r.save()
+    profile.lastDonationDate = datetime.date.today()
+    profile.save()
     messages.success(req, 'You accepted the donation request')
     return redirect('dashboard')
+
+@login_required
+def declineRequestView(req,id):
+    profile = Profile.objects.filter(user=req.user).get()
+    if profile.bloodGroup == None:
+        messages.error(
+            req, 'You must set your blood group to be able to accept')
+        return redirect('profile')
+    if profile.age < 13:
+        messages.error(
+            req, 'You must be at least 13 years old to be able to accept')
+        return redirect('profile')
+
+    requests = DonationRequest.objects.filter(id=id).all()
+    if len(requests) == 0:
+        messages.error(req, 'The donation request was not found')
+        return redirect('dashboard')
+
+    r = requests[0]
+
+    if r.targetDonor != profile.user:
+        messages.error(req,'The request is not for you to decline')
+        return redirect('dashboard')
+    
+    r.cancelled=True
+    r.updatedAt = datetime.datetime.now()
+    r.save()
+    messages.success(req,'The request was declined')
+    return redirect('dashboard')
+
+
+@login_required
+def allRequestsView(req: HttpRequest):
+    profile = Profile.objects.filter(user=req.user).get()
+    reqs = DonationRequest.objects.filter(
+        ~Q(createdBy=req.user), targetDonor=None, acceptedBy=None).all()
+    ctx = {
+        'reqs': reqs,
+        'profile': profile,
+        'pageTitle': 'Donation requests'
+    }
+    return render(req, 'all_reqs.html', ctx)
+
+
+@login_required
+def allPrivateRequestsView(req: HttpRequest):
+    profile = Profile.objects.filter(user=req.user).get()
+    reqs = DonationRequest.objects.filter(
+        ~Q(createdBy=req.user), targetDonor=req.user, acceptedBy=None, cancelled=False).all()[:6]
+    ctx = {
+        'reqs': reqs,
+        'profile': profile,
+        'pageTitle': 'Exclusive donation requests'
+    }
+    return render(req, 'all_reqs.html', ctx)

@@ -6,6 +6,12 @@
 
 <div class="container my-5">
     <h3 class="mb-3">{{title}}</h3>
+    {% if userName != None %}
+    <p class="fs-5">Target donor: <strong>{{userName}}</strong></p>
+    {% endif %}
+    {% if bg != None %}
+    <p class="fs-5">Blood group: <strong>{{bg}}</strong></p>
+    {% endif %}
     <form method="post" class="w-100 w-md-75">
         {% csrf_token %}
         {{ form | crispy}}

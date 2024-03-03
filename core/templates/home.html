@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="container">
+
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="my-3 d-inline-block">Available donors</h2>
+
+        <a class="btn btn-primary" href="{% url 'allRequests' %}">View all</a>
+    </div>
+    <div class="row flex-wrap gap-3">
+
+        {% if donors|length == 0 %}
+        <h5 class="text-center my-5"> No one is available at the moment </h5>
+        {% endif %}
+
+        {% for item in donors %}
+        <div class="card col-3">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">{{item.user.first_name}} {{item.user.last_name}}</h6>
+                <h5 class="card-title mb-2">{{item.bloodGroup}}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{item.contactNumber}}</h6>
+                <p class="card-text">{{item.address}}</p>
+                {% if request.user.is_authenticated %}
+                <a href="{% url 'createRequest' %}?to={{item.user.id}}" class="btn btn-primary">Request</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% endfor %}
+    </div>
+</div>
+
+
+{% endblock content %}

@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h2 class="my-3 d-inline-block">Donation requests</h2>
 
-        <a class="btn btn-primary" href="#">View all</a>
+        <a class="btn btn-primary" href="{% url 'allRequests' %}">View all</a>
     </div>
     <div class="row flex-wrap gap-3">
 
@@ -23,7 +23,9 @@
                 <h5 class="card-title mb-2">{{item.bloodGroup}}</h5>
                 <h6 class="card-subtitle mb-2 text-muted">{{item.contactNumber}}</h6>
                 <p class="card-text">{{item.description}}</p>
+                {% if profile.bloodGroup == item.bloodGroup %}
                 <a href="{% url 'acceptRequest' item.id %}" class="btn btn-success">Accept</a>
+                {% endif %}
             </div>
         </div>
 
@@ -49,7 +51,7 @@
                 <h6 class="card-subtitle mb-2 text-muted">{{item.contactNumber}}</h6>
                 <p class="card-text">{{item.description}}</p>
                 <a href="{% url 'acceptRequest' item.id %}" class="btn btn-success">Accept</a>
-                <a href="#" class="btn btn-danger">Decline</a>
+                <a href="{% url 'declineRequest' item.id %}" class="btn btn-danger">Decline</a>
             </div>
         </div>
 

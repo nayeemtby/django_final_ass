@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="container">
+
+    <h2 class="my-3 d-inline-block">{{pageTitle}}</h2>
+    <div class="row flex-wrap gap-3">
+
+        {% if reqs|length == 0 %}
+        <h5 class="text-center my-5"> No Items </h5>
+        {% endif %}
+
+        {% for item in reqs %}
+        <div class="card col-3">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">{{item.date}}</h6>
+                <h5 class="card-title mb-2">{{item.bloodGroup}}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{item.contactNumber}}</h6>
+                <p class="card-text">{{item.description}}</p>
+                {% if profile.bloodGroup == item.bloodGroup %}
+                <a href="{% url 'acceptRequest' item.id %}" class="btn btn-success">Accept</a>
+                {% endif %}
+                {% if profile.user == item.targetDonor %}
+                <a href="#" class="btn btn-danger">Decline</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% endfor %}
+    </div>
+
+</div>
+
+
+{% endblock content %}
