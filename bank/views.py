@@ -14,6 +14,17 @@ from users.models import Profile
 
 # Create your views here.
 
+bloodGroups = [
+    'O+',
+    'O-',
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+]
+
 
 def passView(req):
     return redirect('home')
@@ -155,12 +166,19 @@ def declineRequestView(req, id):
 
 @login_required
 def allRequestsView(req: HttpRequest):
+    selected = req.GET.get('group', None)
     profile = Profile.objects.filter(user=req.user).get()
-    reqs = DonationRequest.objects.filter(
-        ~Q(createdBy=req.user), targetDonor=None, acceptedBy=None).all()
+    q = DonationRequest.objects.filter(
+        ~Q(createdBy=req.user), targetDonor=None, acceptedBy=None)
+    if selected != None:
+        q = q.filter(bloodGroup=selected)
+    reqs = q.all()
     ctx = {
         'reqs': reqs,
         'profile': profile,
+        'isPublic': True,
+        'groups': bloodGroups,
+        'selectedGroup': selected,
         'pageTitle': 'Donation requests'
     }
     return render(req, 'all_reqs.html', ctx)
@@ -179,14 +197,22 @@ def allPrivateRequestsView(req: HttpRequest):
     return render(req, 'all_reqs.html', ctx)
 
 
-
 def allDonorsView(req: HttpRequest):
+    selected = req.GET.get('group', None)
     q = Profile.objects.filter(available=True)
+
     if req.user.is_authenticated:
         q = q.filter(~Q(user=req.user))
+
+    if selected != None:
+        q = q.filter(bloodGroup=selected)
+
     donors = q.order_by(
         'lastDonationDate').all()[:12]
+
     ctx = {
-        'donors': donors
+        'donors': donors,
+        'groups': bloodGroups,
+        'selectedGroup': selected,
     }
     return render(req, 'all_donors.html', ctx)

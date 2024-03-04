@@ -6,6 +6,13 @@
 <div class="container">
 
     <h2 class="my-3 d-inline-block">Available donors</h2>
+    <div class="d-flex flex-wrap gap-3 mb-2">
+        <a href="{% url 'allDonors' %}" class="btn btn-{% if selectedGroup == None %}primary{% else %}secondary{% endif %}">All</a>
+        {% for item in groups %}
+        <a href="{% url 'allDonors' %}?group={{item|urlencode}}" class="btn btn-{% if selectedGroup == item %}primary{% else %}secondary{% endif %}">{{item}}</a>
+        {% endfor %}
+    </div>
+    <hr class="mb-4"></hr>
     <div class="row flex-wrap gap-3">
 
         {% if donors|length == 0 %}

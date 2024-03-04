@@ -6,6 +6,15 @@
 <div class="container">
 
     <h2 class="my-3 d-inline-block">{{pageTitle}}</h2>
+    {% if isPublic %}
+    <div class="d-flex flex-wrap gap-3 mb-2">
+        <a href="{% url 'allRequests' %}" class="btn btn-{% if selectedGroup == None %}primary{% else %}secondary{% endif %}">All</a>
+        {% for item in groups %}
+        <a href="{% url 'allRequests' %}?group={{item|urlencode}}" class="btn btn-{% if selectedGroup == item %}primary{% else %}secondary{% endif %}">{{item}}</a>
+        {% endfor %}
+    </div>
+    <hr class="mb-4"></hr>
+    {% endif %}
     <div class="row flex-wrap gap-3">
 
         {% if reqs|length == 0 %}
