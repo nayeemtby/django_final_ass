@@ -29,7 +29,7 @@ bloodGroups = [
 def passView(req):
     return redirect('home')
 
-
+@login_required
 def createRequestView(req: HttpRequest):
     ctx: dict[str, Any] = {
         'title': 'Create donation request',

@@ -7,7 +7,13 @@ from django.views.generic import FormView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
 from bank.models import DonationRequest
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from core.mailer import sendMail
+from take_my_blood.settings import hostUrl
 
 from users.forms import ProfileUpdateForm, SignupForm
 from users.models import Profile
@@ -27,8 +33,17 @@ class RegistrationView(FormView):
         return context
 
     def form_valid(self, form):
-        form.save()
-        messages.success(self.request, 'Registration successful')
+        user = form.save()
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        link = f'{hostUrl}/user/activate/{uid}/{token}'
+        ctx = {
+            'title:': 'Confirm your email to complete registration.',
+            'body': f'Follow this link to verify your email: {link}'
+        }
+        sendMail(user.email, 'Confirm your email', 'email.html', ctx)
+        messages.success(
+            self.request, 'Please check your email to verify and complete registration')
         return super().form_valid(form)
 
 
@@ -79,10 +94,28 @@ def logoutView(req: HttpRequest):
 @login_required
 def profileView(req):
     profile = Profile.objects.filter(user=req.user.id).get()
-    createdOnes = DonationRequest.objects.filter(createdBy=req.user).order_by('-updatedAt').all()
+    createdOnes = DonationRequest.objects.filter(
+        createdBy=req.user).order_by('-updatedAt').all()
 
     ctx = {
         'profile': profile,
         'records': createdOnes
     }
     return render(req, 'profile.html', context=ctx)
+
+
+def activateUser(req: HttpRequest, uid: str, token: str):
+    try:
+        pk = urlsafe_base64_decode(uid).decode()
+        user = User._default_manager.get(pk=pk)
+    except (User.DoesNotExist):
+        user = None
+
+    if user != None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(
+            req, 'Your email was verified successfully. You can now login')
+        return redirect('login')
+    messages.error('The link you followed was invalid')
+    return redirect('register')

@@ -14,8 +14,10 @@ class SignupForm(UserCreationForm):
 
     def save(self, commit: bool = True):
         if commit:
-            user = super().save()
+            user = super().save(commit=True)
             Profile.objects.create(user=user)
+            user.is_active = False
+            user.save()
             return user
         return super().save(commit)
 
@@ -36,5 +38,6 @@ class ProfileUpdateForm(ModelForm):
             if bg == None or len(bg) == 0:
                 msg.append('fill in your blood group')
             if len(msg) > 0:
-                raise ValidationError('You must '+' and '.join(msg)+' to be available')
+                raise ValidationError(
+                    'You must '+' and '.join(msg)+' to be available')
         return data
